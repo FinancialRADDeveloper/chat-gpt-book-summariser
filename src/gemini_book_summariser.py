@@ -29,6 +29,231 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 MODEL_NAME = 'gemini-1.5-flash-latest'
 
 
+def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -> bool:
+
+
+    try:
+        # 3. Create a Formatted PDF with Advanced Styling
+        output_pdf_path = os.path.join(OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf")
+
+        # Ensure output directory exists
+        if not os.path.exists(OUTPUT_FOLDER):
+            os.makedirs(OUTPUT_FOLDER)
+
+        doc = SimpleDocTemplate(output_pdf_path, pagesize=letter, topMargin=inch, bottomMargin=inch,
+                                leftMargin=inch, rightMargin=inch)
+
+
+            # --- Custom Styles ---
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib import colors
+
+        # Define custom colors for a professional look
+        dark_grey = colors.HexColor("#2C3E50")
+        light_grey = colors.HexColor("#7F8C8D")
+        accent_blue = colors.HexColor("#3498DB")
+        quote_bg_color = colors.HexColor("#ECF0F1")  # A light background for quotes
+
+        styles = {
+            'h1': ParagraphStyle(name='h1', fontName='Helvetica-Bold', fontSize=24, textColor=dark_grey,
+                                 spaceAfter=18, leading=30),
+            'h2': ParagraphStyle(name='h2', fontName='Helvetica', fontSize=16, textColor=light_grey, spaceAfter=12,
+                                 leading=20),
+            'h3': ParagraphStyle(name='h3', fontName='Helvetica-Bold', fontSize=14, textColor=accent_blue,
+                                 spaceBefore=12, spaceAfter=6, leading=18),
+            'Normal': ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=11, textColor=dark_grey,
+                                     spaceAfter=6, leading=16, alignment=4),  # Justified
+            'Bullet': ParagraphStyle(name='Bullet', fontName='Helvetica', fontSize=11, textColor=dark_grey,
+                                     spaceAfter=4, leading=16, leftIndent=18, bulletIndent=0),
+            'Quote': ParagraphStyle(name='Quote', fontName='Helvetica-Oblique', fontSize=11,
+                                    textColor=colors.HexColor("#2C3E50"), spaceBefore=10, spaceAfter=10, leading=16,
+                                    leftIndent=15, rightIndent=15, backColor=quote_bg_color, borderPadding=10,
+                                    borderColor=accent_blue, borderWidth=1)
+        }
+        story = []
+
+        # --- Extract sections and create TOC ---
+        # --- Build Cover Page ---
+        # Add a professional cover page
+        story.append(Paragraph(f"Book Summary & Review", styles['h1']))
+        story.append(Spacer(1, 0.2 * inch))
+        story.append(HorizontalLine(450, 2, accent_blue))
+        story.append(Spacer(1, 0.3 * inch))
+        story.append(Paragraph(f"{book_title}", styles['h1']))
+        story.append(Spacer(1, 0.1 * inch))
+        story.append(Paragraph("A Professional Analysis for Technology Leaders", styles['h2']))
+        story.append(Spacer(1, 0.5 * inch))
+
+        # Add a decorative element to the cover
+        d = Drawing(400, 100)
+        line = Line(0, 50, 400, 50, strokeWidth=1, strokeColor=accent_blue)
+        d.add(line)
+
+        # Create a pie chart showing value distribution (for visual appeal)
+        pie = Pie()
+        pie.x = 150
+        pie.y = 50
+        pie.width = 100
+        pie.height = 100
+        pie.data = [35, 25, 20, 15, 5]  # Represent book value distribution
+        pie.labels = ['Key Insights', 'Practical Tips', 'Case Studies', 'Frameworks', 'Other']
+        pie.slices.strokeWidth = 0.5
+        pie.slices[0].fillColor = accent_blue
+        pie.slices[1].fillColor = accent_blue
+        pie.slices[2].fillColor = accent_blue
+        pie.slices[3].fillColor = light_grey
+        pie.slices[4].fillColor = dark_grey
+        d.add(pie)
+
+        story.append(d)
+        story.append(Spacer(1, 0.3 * inch))
+
+        # Add author info section
+        story.append(Paragraph("Prepared by", styles['Normal']))
+        story.append(Paragraph("Professional Book Summary Service", styles['Strong']))
+        story.append(Paragraph(f"Completed on: {time.strftime('%B %d, %Y')}", styles['Normal']))
+
+        # Add page break after cover
+        story.append(PageBreak())
+
+        # --- Add Table of Contents ---
+        story.append(Paragraph("Table of Contents", styles['toc_title']))
+        story.append(Spacer(1, 0.2 * inch))
+
+        # Create a simple TOC manually
+        toc_data = []
+        for i, section in enumerate(story):
+            if len(section) > 60:  # Truncate long section names
+                section = section[:57] + "..."
+            toc_data.append([Paragraph(section, styles['toc_heading']), Paragraph(f"Page {i + 2}", styles['toc_item'])])
+
+        if toc_data:  # Only create table if we have sections
+            # Create the table with the TOC data
+            toc_table = Table(toc_data, colWidths=[5 * inch, 0.7 * inch])
+            toc_table.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.white),  # No visible grid
+                ('LINEBELOW', (0, 0), (-1, -2), 0.5, light_grey),  # Light separator lines
+                ('BACKGROUND', (0, 0), (-1, -1), colors.white),  # White background
+            ]))
+            story.append(toc_table)
+        else:
+            story.append(Paragraph("(Content sections will appear here)", styles['NormalLeft']))
+
+        story.append(Spacer(1, 0.3 * inch))
+        story.append(HorizontalLine(450, 1, light_grey))
+        story.append(Spacer(1, 0.2 * inch))
+        story.append(Paragraph(
+            "This summary provides key insights and analysis. Skip to the last page for the final review and recommendation.",
+            styles['Emphasis']))
+
+        # Add page break after TOC
+        story.append(PageBreak())
+
+        # Parse and add the AI-generated text using enhanced styles
+        in_review_section = False
+        current_heading_level = 0
+        section_count = 0
+
+        # Process the content with improved formatting
+        for para_text in summary_and_review_text.split('\n'):
+            if not para_text.strip():
+                continue  # Skip empty lines
+
+            # Check for Markdown headings of different levels
+            if para_text.startswith('# '):
+                section_count += 1
+                heading_text = para_text.lstrip('# ').strip()
+                # Add a page break before major sections except the first one
+                if section_count > 1:
+                    story.append(PageBreak())
+
+                story.append(HorizontalLine.FancySectionHeader(heading_text, 450, bg_color=accent_blue, text_color=colors.white))
+                story.append(Spacer(1, 0.15 * inch))
+
+                # Check if we're entering the review section
+                if "review" in heading_text.lower() or "recommendation" in heading_text.lower():
+                    in_review_section = True
+
+                    # Add a visual indicator for the review section
+                    story.append(Paragraph("FINAL ASSESSMENT", styles['toc_title']))
+
+            elif para_text.startswith('## '):
+                heading_text = para_text.lstrip('## ').strip()
+                story.append(Paragraph(heading_text, styles['h2']))
+                story.append(HorizontalLine(450, 1, light_grey))
+                story.append(Spacer(1, 0.1 * inch))
+
+            elif para_text.startswith('### '):
+                story.append(Paragraph(para_text.lstrip('### ').strip(), styles['h3']))
+
+            elif para_text.startswith('#### '):
+                story.append(Paragraph(para_text.lstrip('#### ').strip(), styles['h4']))
+
+            elif para_text.startswith('> '):
+                # Enhanced quote styling
+                quote_text = para_text.lstrip('> ').strip()
+                story.append(Paragraph(f'"{quote_text}"', styles['Quote']))
+                story.append(Spacer(1, 0.1 * inch))
+
+            elif para_text.startswith('* ') or para_text.startswith('- '):
+                # Enhanced bullet point styling
+                bullet_text = para_text.lstrip('*- ').strip()
+                story.append(Paragraph(bullet_text, styles['Bullet'], bulletText='•'))
+
+            elif para_text.startswith('```') or para_text.endswith('```'):
+                # Skip code blocks or handle them if needed
+                continue
+
+            elif in_review_section and ('recommend' in para_text.lower() or
+                                        'conclusion' in para_text.lower() or
+                                        'verdict' in para_text.lower()):
+                # Highlight recommendation text
+                story.append(Spacer(1, 0.2 * inch))
+                story.append(Paragraph(para_text, styles['Callout']))
+                story.append(Spacer(1, 0.2 * inch))
+
+            else:
+                # Check for bold and italic text in paragraphs
+                if '**' in para_text or '__' in para_text:
+                    # Has bold text - use strong style
+                    story.append(Paragraph(para_text.replace('**', '<b>').replace('__', '<b>'), styles['Strong']))
+                elif '*' in para_text or '_' in para_text:
+                    # Has italic text - use emphasis style
+                    story.append(Paragraph(para_text.replace('*', '<i>').replace('_', '<i>'), styles['Emphasis']))
+                else:
+                    # Regular paragraph
+                    story.append(Paragraph(para_text, styles['Normal']))
+
+
+    except OSError as e:
+        print(f"Error creating output directory or PDF file: {e}")
+        return False
+    except Exception as e:
+        print(f"Unexpected error during PDF setup: {e}")
+        return False
+
+
+    # Custom document building with footer
+    def add_footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 9)
+        canvas.setFillColor(light_grey)
+        footer_text = f"Book Summary & Review | {book_title} | Generated on {time.strftime('%B %d, %Y')}"
+        canvas.drawCentredString(letter[0] / 2, 0.5 * inch, footer_text)
+        canvas.restoreState()
+
+    try:
+        # Build the PDF with the footer function
+        doc.build(story, onFirstPage=add_footer, onLaterPages=add_footer)
+        print(f"Created styled PDF: {output_pdf_path}")
+        return True
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        return False
+
+
 # --- Custom Flowables ---
 class HorizontalLine(Flowable):
     """A horizontal line with thickness and color."""
@@ -45,31 +270,34 @@ class HorizontalLine(Flowable):
         self.canv.line(0, 0, self.width, 0)
 
     class FancySectionHeader(Flowable):
-    """A fancy section header with background."""
-    def __init__(self, text, width, height=0.3*inch, font_name='Helvetica-Bold', font_size=14, 
-                 bg_color=None, text_color=None):
-        Flowable.__init__(self)
-        self.text = text
-        self.width = width
-        self.height = height
-        self.font_name = font_name
-        self.font_size = font_size
-        self.bg_color = bg_color
-        self.text_color = text_color
+        """A fancy section header with background."""
+        def __init__(self, text, width, height=0.3*inch, font_name='Helvetica-Bold', font_size=14,
+                     bg_color=None, text_color=None):
+            Flowable.__init__(self)
+            self.text = text
+            self.width = width
+            self.height = height
+            self.font_name = font_name
+            self.font_size = font_size
+            self.bg_color = bg_color
+            self.text_color = text_color
 
-    def draw(self):
-        # Draw background
-        if self.bg_color:
-            self.canv.setFillColor(self.bg_color)
-            self.canv.rect(0, 0, self.width, self.height, fill=1, stroke=0)
+        def draw(self):
+            # Draw background
+            if self.bg_color:
+                self.canv.setFillColor(self.bg_color)
+                self.canv.rect(0, 0, self.width, self.height, fill=1, stroke=0)
 
-        # Draw text
-        self.canv.setFont(self.font_name, self.font_size)
-        if self.text_color:
-            self.canv.setFillColor(self.text_color)
-        text_width = self.canv.stringWidth(self.text, self.font_name, self.font_size)
-        y_position = (self.height - self.font_size) / 2
-        self.canv.drawString(10, y_position, self.text)
+            # Draw text
+            self.canv.setFont(self.font_name, self.font_size)
+            if self.text_color:
+                self.canv.setFillColor(self.text_color)
+            text_width = self.canv.stringWidth(self.text, self.font_name, self.font_size)
+            y_position = (self.height - self.font_size) / 2
+            self.canv.drawString(10, y_position, self.text)
+
+
+
 
 # --- Main Processing Logic ---
 def process_ebooks_with_gemini_vision():
@@ -189,216 +417,21 @@ def process_ebooks_with_gemini_vision():
 
             print(f"Generated summary and review for '{book_title}'.")
 
-            # 3. Create Formatted PDF with Advanced Styling
-            output_pdf_path = os.path.join(OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf")
-            doc = SimpleDocTemplate(output_pdf_path, pagesize=letter, topMargin=inch, bottomMargin=inch,
-                                    leftMargin=inch, rightMargin=inch)
+            # Save raw summary to file
+            raw_summaries_folder = "raw_summaries"
+            if not os.path.exists(raw_summaries_folder):
+                os.makedirs(raw_summaries_folder)
+                print(f"Created raw summaries folder: {raw_summaries_folder}")
 
-            # --- Custom Styles ---
-            from reportlab.lib.styles import ParagraphStyle
-            from reportlab.lib import colors
+            raw_summary_path = os.path.join(raw_summaries_folder, f"{book_title}_raw.txt")
+            try:
+                with open(raw_summary_path, 'w', encoding='utf-8') as f:
+                    f.write(summary_and_review_text)
+                print(f"Saved raw summary to: {raw_summary_path}")
+            except Exception as e:
+                print(f"Error saving raw summary: {e}")
 
-            # Define custom colors for a professional look
-            dark_grey = colors.HexColor("#2C3E50")
-            light_grey = colors.HexColor("#7F8C8D")
-            accent_blue = colors.HexColor("#3498DB")
-            quote_bg_color = colors.HexColor("#ECF0F1")  # A light background for quotes
-
-            styles = {
-                'h1': ParagraphStyle(name='h1', fontName='Helvetica-Bold', fontSize=24, textColor=dark_grey,
-                                     spaceAfter=18, leading=30),
-                'h2': ParagraphStyle(name='h2', fontName='Helvetica', fontSize=16, textColor=light_grey, spaceAfter=12,
-                                     leading=20),
-                'h3': ParagraphStyle(name='h3', fontName='Helvetica-Bold', fontSize=14, textColor=accent_blue,
-                                     spaceBefore=12, spaceAfter=6, leading=18),
-                'Normal': ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=11, textColor=dark_grey,
-                                         spaceAfter=6, leading=16, alignment=4),  # Justified
-                'Bullet': ParagraphStyle(name='Bullet', fontName='Helvetica', fontSize=11, textColor=dark_grey,
-                                         spaceAfter=4, leading=16, leftIndent=18, bulletIndent=0),
-                'Quote': ParagraphStyle(name='Quote', fontName='Helvetica-Oblique', fontSize=11,
-                                        textColor=colors.HexColor("#2C3E50"), spaceBefore=10, spaceAfter=10, leading=16,
-                                        leftIndent=15, rightIndent=15, backColor=quote_bg_color, borderPadding=10,
-                                        borderColor=accent_blue, borderWidth=1)
-            }
-            story = []
-
-            # --- Extract sections and create TOC ---
-            # First pass: Extract headings and structure
-            sections = []
-            current_section = ""
-            section_pattern = re.compile(r'^#+\s+(.+)$|^(.+)\n[=\-]+$')  # Markdown headings
-
-            # Process the text to extract headings
-            for line in summary_and_review_text.split('\n'):
-                match = section_pattern.match(line)
-                if match:
-                    heading = match.group(1) or match.group(2)
-                    sections.append(heading.strip())
-
-            # --- Build Cover Page ---
-            # Add a professional cover page
-            story.append(Paragraph(f"Book Summary & Review", styles['cover_title']))
-            story.append(Spacer(1, 0.2 * inch))
-            story.append(HorizontalLine(450, 2, accent_blue))
-            story.append(Spacer(1, 0.3 * inch))
-            story.append(Paragraph(f"{book_title}", styles['cover_title']))
-            story.append(Spacer(1, 0.1 * inch))
-            story.append(Paragraph("A Professional Analysis for Technology Leaders", styles['cover_subtitle']))
-            story.append(Spacer(1, 0.5 * inch))
-
-            # Add a decorative element to the cover
-            d = Drawing(400, 100)
-            line = Line(0, 50, 400, 50, strokeWidth=1, strokeColor=accent_blue)
-            d.add(line)
-
-            # Create a pie chart showing value distribution (for visual appeal)
-            pie = Pie()
-            pie.x = 150
-            pie.y = 50
-            pie.width = 100
-            pie.height = 100
-            pie.data = [35, 25, 20, 15, 5]  # Represent book value distribution
-            pie.labels = ['Key Insights', 'Practical Tips', 'Case Studies', 'Frameworks', 'Other']
-            pie.slices.strokeWidth = 0.5
-            pie.slices[0].fillColor = accent_blue
-            pie.slices[1].fillColor = brand_blue
-            pie.slices[2].fillColor = highlight_orange
-            pie.slices[3].fillColor = light_grey
-            pie.slices[4].fillColor = dark_grey
-            d.add(pie)
-
-            story.append(d)
-            story.append(Spacer(1, 0.3 * inch))
-
-            # Add author info section
-            story.append(Paragraph("Prepared by", styles['NormalLeft']))
-            story.append(Paragraph("Professional Book Summary Service", styles['Strong']))
-            story.append(Paragraph(f"Completed on: {time.strftime('%B %d, %Y')}", styles['NormalLeft']))
-
-            # Add page break after cover
-            story.append(PageBreak())
-
-            # --- Add Table of Contents ---
-            story.append(Paragraph("Table of Contents", styles['toc_title']))
-            story.append(Spacer(1, 0.2 * inch))
-
-            # Create a simple TOC manually
-            toc_data = []
-            for i, section in enumerate(sections):
-                if len(section) > 60:  # Truncate long section names
-                    section = section[:57] + "..."
-                toc_data.append([Paragraph(section, styles['toc_heading']), Paragraph(f"Page {i+2}", styles['toc_item'])])
-
-            if toc_data:  # Only create table if we have sections
-                # Create the table with the TOC data
-                toc_table = Table(toc_data, colWidths=[5*inch, 0.7*inch])
-                toc_table.setStyle(TableStyle([
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-                    ('GRID', (0, 0), (-1, -1), 0.5, colors.white),  # No visible grid
-                    ('LINEBELOW', (0, 0), (-1, -2), 0.5, light_grey),  # Light separator lines
-                    ('BACKGROUND', (0, 0), (-1, -1), colors.white),  # White background
-                ]))
-                story.append(toc_table)
-            else:
-                story.append(Paragraph("(Content sections will appear here)", styles['NormalLeft']))
-
-            story.append(Spacer(1, 0.3 * inch))
-            story.append(HorizontalLine(450, 1, light_grey))
-            story.append(Spacer(1, 0.2 * inch))
-            story.append(Paragraph("This summary provides key insights and analysis. Skip to the last page for the final review and recommendation.", styles['Emphasis']))
-
-            # Add page break after TOC
-            story.append(PageBreak())
-
-            # Parse and add the AI-generated text using enhanced styles
-            in_review_section = False
-            current_heading_level = 0
-            section_count = 0
-
-            # Process the content with improved formatting
-            for para_text in summary_and_review_text.split('\n'):
-                if not para_text.strip():
-                    continue  # Skip empty lines
-
-                # Check for Markdown headings of different levels
-                if para_text.startswith('# '):
-                    section_count += 1
-                    heading_text = para_text.lstrip('# ').strip()
-                    # Add a page break before major sections except the first one
-                    if section_count > 1:
-                        story.append(PageBreak())
-
-                    # Add fancy section header
-                    story.append(FancySectionHeader(heading_text, 450, bg_color=brand_blue, text_color=colors.white))
-                    story.append(Spacer(1, 0.15 * inch))
-
-                    # Check if we're entering the review section
-                    if "review" in heading_text.lower() or "recommendation" in heading_text.lower():
-                        in_review_section = True
-
-                        # Add a visual indicator for the review section
-                        story.append(Paragraph("FINAL ASSESSMENT", styles['toc_title']))
-
-                elif para_text.startswith('## '):
-                    heading_text = para_text.lstrip('## ').strip()
-                    story.append(Paragraph(heading_text, styles['h2']))
-                    story.append(HorizontalLine(450, 1, light_grey))
-                    story.append(Spacer(1, 0.1 * inch))
-
-                elif para_text.startswith('### '):
-                    story.append(Paragraph(para_text.lstrip('### ').strip(), styles['h3']))
-
-                elif para_text.startswith('#### '):
-                    story.append(Paragraph(para_text.lstrip('#### ').strip(), styles['h4']))
-
-                elif para_text.startswith('> '):
-                    # Enhanced quote styling
-                    quote_text = para_text.lstrip('> ').strip()
-                    story.append(Paragraph(f'"{quote_text}"', styles['Quote']))
-                    story.append(Spacer(1, 0.1 * inch))
-
-                elif para_text.startswith('* ') or para_text.startswith('- '):
-                    # Enhanced bullet point styling
-                    bullet_text = para_text.lstrip('*- ').strip()
-                    story.append(Paragraph(bullet_text, styles['Bullet'], bulletText='•'))
-
-                elif para_text.startswith('```') or para_text.endswith('```'):
-                    # Skip code blocks or handle them if needed
-                    continue
-
-                elif in_review_section and ('recommend' in para_text.lower() or 
-                                          'conclusion' in para_text.lower() or
-                                          'verdict' in para_text.lower()):
-                    # Highlight recommendation text
-                    story.append(Spacer(1, 0.2 * inch))
-                    story.append(Paragraph(para_text, styles['Callout']))
-                    story.append(Spacer(1, 0.2 * inch))
-
-                else:
-                    # Check for bold and italic text in paragraphs
-                    if '**' in para_text or '__' in para_text:
-                        # Has bold text - use strong style
-                        story.append(Paragraph(para_text.replace('**', '<b>').replace('__', '<b>'), styles['Strong']))
-                    elif '*' in para_text or '_' in para_text:
-                        # Has italic text - use emphasis style
-                        story.append(Paragraph(para_text.replace('*', '<i>').replace('_', '<i>'), styles['Emphasis']))
-                    else:
-                        # Regular paragraph
-                        story.append(Paragraph(para_text, styles['Normal']))
-
-            # Custom document building with footer
-            def add_footer(canvas, doc):
-                canvas.saveState()
-                canvas.setFont('Helvetica', 9)
-                canvas.setFillColor(light_grey)
-                footer_text = f"Book Summary & Review | {book_title} | Generated on {time.strftime('%B %d, %Y')}"
-                canvas.drawCentredString(letter[0]/2, 0.5*inch, footer_text)
-                canvas.restoreState()
-
-            # Build the PDF with the footer function
-            doc.build(story, onFirstPage=add_footer, onLaterPages=add_footer)
-            print(f"Created styled PDF: {output_pdf_path}")
+            # create_pdf_from_raw_summary(summary_and_review_text, book_title)
 
         except Exception as e:
             print(f"An error occurred while processing '{book_title}': {e}")
