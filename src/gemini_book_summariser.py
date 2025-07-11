@@ -1,9 +1,7 @@
 import os
 import google.generativeai as genai
-# from google.generativeai.types import Part # No longer imported directly
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from dotenv import load_dotenv
 import time  # Import time for sleep
@@ -126,7 +124,8 @@ def process_ebooks_with_gemini_vision():
 
             # 3. Create Formatted PDF with Advanced Styling
             output_pdf_path = os.path.join(OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf")
-            doc = SimpleDocTemplate(output_pdf_path, pagesize=letter, topMargin=inch, bottomMargin=inch, leftMargin=inch, rightMargin=inch)
+            doc = SimpleDocTemplate(output_pdf_path, pagesize=letter, topMargin=inch, bottomMargin=inch,
+                                    leftMargin=inch, rightMargin=inch)
 
             # --- Custom Styles ---
             from reportlab.lib.styles import ParagraphStyle
@@ -136,15 +135,23 @@ def process_ebooks_with_gemini_vision():
             dark_grey = colors.HexColor("#2C3E50")
             light_grey = colors.HexColor("#7F8C8D")
             accent_blue = colors.HexColor("#3498DB")
-            quote_bg_color = colors.HexColor("#ECF0F1") # A light background for quotes
+            quote_bg_color = colors.HexColor("#ECF0F1")  # A light background for quotes
 
             styles = {
-                'h1': ParagraphStyle(name='h1', fontName='Helvetica-Bold', fontSize=24, textColor=dark_grey, spaceAfter=18, leading=30),
-                'h2': ParagraphStyle(name='h2', fontName='Helvetica', fontSize=16, textColor=light_grey, spaceAfter=12, leading=20),
-                'h3': ParagraphStyle(name='h3', fontName='Helvetica-Bold', fontSize=14, textColor=accent_blue, spaceBefore=12, spaceAfter=6, leading=18),
-                'Normal': ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=11, textColor=dark_grey, spaceAfter=6, leading=16, alignment=4), # Justified
-                'Bullet': ParagraphStyle(name='Bullet', fontName='Helvetica', fontSize=11, textColor=dark_grey, spaceAfter=4, leading=16, leftIndent=18, bulletIndent=0),
-                'Quote': ParagraphStyle(name='Quote', fontName='Helvetica-Oblique', fontSize=11, textColor=colors.HexColor("#2C3E50"), spaceBefore=10, spaceAfter=10, leading=16, leftIndent=15, rightIndent=15, backColor=quote_bg_color, borderPadding=10, borderColor=accent_blue, borderWidth=1)
+                'h1': ParagraphStyle(name='h1', fontName='Helvetica-Bold', fontSize=24, textColor=dark_grey,
+                                     spaceAfter=18, leading=30),
+                'h2': ParagraphStyle(name='h2', fontName='Helvetica', fontSize=16, textColor=light_grey, spaceAfter=12,
+                                     leading=20),
+                'h3': ParagraphStyle(name='h3', fontName='Helvetica-Bold', fontSize=14, textColor=accent_blue,
+                                     spaceBefore=12, spaceAfter=6, leading=18),
+                'Normal': ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=11, textColor=dark_grey,
+                                         spaceAfter=6, leading=16, alignment=4),  # Justified
+                'Bullet': ParagraphStyle(name='Bullet', fontName='Helvetica', fontSize=11, textColor=dark_grey,
+                                         spaceAfter=4, leading=16, leftIndent=18, bulletIndent=0),
+                'Quote': ParagraphStyle(name='Quote', fontName='Helvetica-Oblique', fontSize=11,
+                                        textColor=colors.HexColor("#2C3E50"), spaceBefore=10, spaceAfter=10, leading=16,
+                                        leftIndent=15, rightIndent=15, backColor=quote_bg_color, borderPadding=10,
+                                        borderColor=accent_blue, borderWidth=1)
             }
             story = []
 
@@ -156,7 +163,7 @@ def process_ebooks_with_gemini_vision():
             # Parse and add the AI-generated text using the new styles.
             for para_text in summary_and_review_text.split('\n'):
                 if not para_text.strip():
-                    continue # Skip empty lines
+                    continue  # Skip empty lines
 
                 if para_text.startswith('## '):
                     story.append(Paragraph(para_text.lstrip('## ').strip(), styles['h3']))
