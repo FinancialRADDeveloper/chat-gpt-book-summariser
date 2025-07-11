@@ -1,0 +1,4 @@
+/.env
+/src/claude_pdf_summaries/
+/src/gemini_pdf_summaries/
+/src/raw_summaries/
