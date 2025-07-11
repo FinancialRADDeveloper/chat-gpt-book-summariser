@@ -1,5 +1,7 @@
 fitz==0.0.1.dev2
 fpdf==1.7.2
 openai==1.95.0
+protobuf==6.31.1
 python-dotenv==1.1.1
+reportlab==4.4.2
 tqdm==4.67.1
