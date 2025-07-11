@@ -271,4 +271,4 @@ if __name__ == '__main__':
             parsed_data = parse_summary_file(input_file)
 
             # Generate the beautiful PDF from the parsed data
-            create_article_pdf(parsed_data, filename=os.path.join('summaries', output_filename))
+            create_article_pdf(parsed_data, filename=os.path.join('gemini_pdf_summaries', output_filename))

@@ -11,7 +11,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Configuration
 INPUT_FOLDER = "books/"
-OUTPUT_FOLDER = "summaries/"
+OUTPUT_FOLDER = "gemini_pdf_summaries/"
 MODEL = "gpt-4"  # or "gpt-3.5-turbo"
 
 

@@ -21,7 +21,7 @@ load_dotenv()
 # Ensure these paths are correct relative to where you run the script,
 # or provide absolute paths.
 PDF_FOLDER = "../books"  # Adjust if your 'books' folder is elsewhere
-OUTPUT_FOLDER = "summaries"  # This will create a 'summaries' folder in the script's directory
+OUTPUT_FOLDER = "gemini_pdf_summaries"  # This will create a 'gemini_pdf_summaries' folder in the script's directory
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Use a model that supports multimodal input (like Gemini 1.5 Pro)
@@ -421,7 +421,7 @@ def process_ebooks_with_gemini_vision():
             raw_summaries_folder = "raw_summaries"
             if not os.path.exists(raw_summaries_folder):
                 os.makedirs(raw_summaries_folder)
-                print(f"Created raw summaries folder: {raw_summaries_folder}")
+                print(f"Created raw gemini_pdf_summaries folder: {raw_summaries_folder}")
 
             raw_summary_path = os.path.join(raw_summaries_folder, f"{book_title}_raw.txt")
             try:

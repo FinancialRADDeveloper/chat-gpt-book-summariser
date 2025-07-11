@@ -11,7 +11,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Configuration
 INPUT_FOLDER = "../books/"
-OUTPUT_FOLDER = "summaries/"
+OUTPUT_FOLDER = "gemini_pdf_summaries/"
 ASSISTANT_NAME = "Book Summarizer Assistant"
 MODEL = "gpt-4o"
 
@@ -29,7 +29,7 @@ def create_or_get_assistant():
         instructions=(
             "You are a helpful book summarizer. Your job is to read uploaded PDFs of books "
             "and summarize them into engaging blog-style reviews of around 4 A4 pages. "
-            "Your summaries should help readers decide whether to read the full book."
+            "Your gemini_pdf_summaries should help readers decide whether to read the full book."
         ),
         model=MODEL,
         tools=[{"type": "file_search"}],

@@ -82,58 +82,61 @@ class PDF(FPDF):
 
     def show_paragraph(self, text):
         """Formats and displays a standard paragraph, handling bold prefixes."""
-        self.set_font('Times', '', 12)
+        self.ln(2)
         self.set_text_color(*COLOR_PALETTE["text_dark"])
-        # Check for the pattern: **Bold Label:** rest of text.
-        if text.startswith('**') and '**:' in text:
-            try:
-                parts = text.split('**:', 1)
-                label = parts[0].lstrip('**') + ':'
-                content = parts[1].strip()
-                # Write the bold label
-                self.set_font('Times', 'B', 12)
-                self.write(h=7, txt=label + ' ')
-                # Write the rest of the text
-                self.set_font('Times', '', 12)
-                self.write(h=7, txt=content)
-                self.ln(9)  # Extra space after the line
-            except IndexError:
-                # Fallback for malformed text
-                self.multi_cell(0, 7, text, 0, 'J');
-                self.ln(4)
+        # Check for the pattern **Bold Text** followed by more text
+        match = re.match(r'\*\*(.*?)\*\*(.*)', text)
+        if match:
+            bold_part = match.group(1).strip()
+            regular_part = match.group(2).strip()
+
+            self.set_font('Times', 'B', 12)
+            self.write(h=7, txt=bold_part + ' ')
+
+            end_of_bold_x = self.get_x()
+            self.set_font('Times', '', 12)
+
+            remaining_width = self.w - self.r_margin - end_of_bold_x
+            self.multi_cell(w=remaining_width, h=7, txt=regular_part, align='L')
         else:
-            self.multi_cell(0, 7, text, 0, 'J');
-            self.ln(4)
+            self.set_font('Times', '', 12)
+            self.multi_cell(0, 7, text, 0, 'J')
+        self.ln(2)
 
     def show_bullet_point(self, text):
         """Formats and displays a bullet point, handling bold prefixes."""
         self.ln(1)
         self.set_text_color(*COLOR_PALETTE["text_dark"])
+
         bullet_x = self.get_x()
         bullet_char = chr(149)
         text_x = bullet_x + 8
-        # Place bullet symbol
+
+        # Place the bullet, but preserve Y coordinate
+        current_y = self.get_y()
         self.cell(w=8, h=7, txt=bullet_char, align="C")
+        self.set_y(current_y)  # Reset Y to the start of the line
         self.set_x(text_x)
-        # Check for the pattern: **Bold Label:** rest of text.
-        if text.startswith('**') and '**:' in text:
-            try:
-                parts = text.split('**:', 1)
-                label = parts[0].lstrip('**') + ':'
-                content = parts[1].strip()
-                # Write the bold label next to the bullet
-                self.set_font('Times', 'B', 12)
-                self.write(h=7, txt=label + ' ')
-                # Write the rest of the content
-                self.set_font('Times', '', 12)
-                self.write(h=7, txt=content)
-                self.ln(6)  # Extra space after the line
-            except IndexError:
-                self.set_font('Times', '', 12);
-                self.multi_cell(0, 7, text, align='J')
+
+        # Check for the pattern **Bold Text** followed by more text
+        match = re.match(r'\*\*(.*?)\*\*(.*)', text)
+        if match:
+            bold_part = match.group(1).strip()
+            regular_part = match.group(2).strip()
+
+            self.set_font('Times', 'B', 12)
+            self.write(h=7, txt=bold_part + ' ')
+
+            end_of_bold_x = self.get_x()
+            self.set_font('Times', '', 12)
+
+            # Use multi_cell for the rest of the text to handle wrapping
+            remaining_width = self.w - self.r_margin - end_of_bold_x
+            self.multi_cell(w=remaining_width, h=7, txt=regular_part, align='L')
         else:
-            self.set_font('Times', '', 12);
+            self.set_font('Times', '', 12)
             self.multi_cell(0, 7, text, align='J')
+
         self.ln(1)
 
     def show_quote(self, text):
@@ -184,9 +187,6 @@ def parse_summary_file(filepath):
                 article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             continue
-
-        # Replace words between ** with <b>word</b>
-        line = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', line)
 
         if line.startswith('## '):
             if paragraph_buffer:
@@ -271,7 +271,7 @@ if __name__ == '__main__':
         print(f"Error: Directory '{raw_summaries_dir}' not found.")
         exit()
 
-    summaries_dir = 'summaries'
+    summaries_dir = 'gemini_pdf_summaries'
     if not os.path.exists(summaries_dir):
         os.makedirs(summaries_dir)
 
