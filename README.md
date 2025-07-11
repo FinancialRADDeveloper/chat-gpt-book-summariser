@@ -1,4 +1,4 @@
-# chat-gpt-book-summariser
+# ai-book-summariser
 
 Create Conda Env 
 
