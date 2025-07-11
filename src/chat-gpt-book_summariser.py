@@ -32,24 +32,25 @@ def summarize_with_chatgpt(book_text, book_title):
     )
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Title: {book_title}\n\nBook content:\n{book_text}"}
+        {
+            "role": "user",
+            "content": f"Title: {book_title}\n\nBook content:\n{book_text}",
+        },
     ]
 
     response = openai.ChatCompletion.create(
-        model=MODEL,
-        messages=messages,
-        temperature=0.7
+        model=MODEL, messages=messages, temperature=0.7
     )
-    return response['choices'][0]['message']['content']
+    return response["choices"][0]["message"]["content"]
 
 
 def save_as_pdf(text, output_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    text = ''.join([c if ord(c) < 128 else '' for c in text])  # Strip emojis
+    text = "".join([c if ord(c) < 128 else "" for c in text])  # Strip emojis
 
-    for line in text.split('\n'):
+    for line in text.split("\n"):
         pdf.multi_cell(0, 10, line)
     pdf.output(output_path)
 
