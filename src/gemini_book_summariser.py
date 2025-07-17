@@ -1,7 +1,15 @@
 import os
 import google.generativeai as genai
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak, Table, TableStyle
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Image,
+    PageBreak,
+    Table,
+    TableStyle,
+)
 from reportlab.lib.units import inch
 from reportlab.graphics.shapes import Drawing, Line
 from reportlab.graphics.charts.piecharts import Pie
@@ -27,25 +35,31 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Use a model that supports multimodal input (like Gemini 1.5 Pro)
 # 'gemini-1.5-pro-latest' is the correct and most capable model for this task.
-MODEL_NAME = 'gemini-1.5-flash-latest'
+MODEL_NAME = "gemini-1.5-flash-latest"
 
 
 def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -> bool:
 
-
     try:
         # 3. Create a Formatted PDF with Advanced Styling
-        output_pdf_path = os.path.join(OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf")
+        output_pdf_path = os.path.join(
+            OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf"
+        )
 
         # Ensure output directory exists
         if not os.path.exists(OUTPUT_FOLDER):
             os.makedirs(OUTPUT_FOLDER)
 
-        doc = SimpleDocTemplate(output_pdf_path, pagesize=letter, topMargin=inch, bottomMargin=inch,
-                                leftMargin=inch, rightMargin=inch)
+        doc = SimpleDocTemplate(
+            output_pdf_path,
+            pagesize=letter,
+            topMargin=inch,
+            bottomMargin=inch,
+            leftMargin=inch,
+            rightMargin=inch,
+        )
 
-
-            # --- Custom Styles ---
+        # --- Custom Styles ---
         from reportlab.lib.styles import ParagraphStyle
         from reportlab.lib import colors
 
@@ -56,33 +70,80 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         quote_bg_color = colors.HexColor("#ECF0F1")  # A light background for quotes
 
         styles = {
-            'h1': ParagraphStyle(name='h1', fontName='Helvetica-Bold', fontSize=24, textColor=dark_grey,
-                                 spaceAfter=18, leading=30),
-            'h2': ParagraphStyle(name='h2', fontName='Helvetica', fontSize=16, textColor=light_grey, spaceAfter=12,
-                                 leading=20),
-            'h3': ParagraphStyle(name='h3', fontName='Helvetica-Bold', fontSize=14, textColor=accent_blue,
-                                 spaceBefore=12, spaceAfter=6, leading=18),
-            'Normal': ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=11, textColor=dark_grey,
-                                     spaceAfter=6, leading=16, alignment=4),  # Justified
-            'Bullet': ParagraphStyle(name='Bullet', fontName='Helvetica', fontSize=11, textColor=dark_grey,
-                                     spaceAfter=4, leading=16, leftIndent=18, bulletIndent=0),
-            'Quote': ParagraphStyle(name='Quote', fontName='Helvetica-Oblique', fontSize=11,
-                                    textColor=colors.HexColor("#2C3E50"), spaceBefore=10, spaceAfter=10, leading=16,
-                                    leftIndent=15, rightIndent=15, backColor=quote_bg_color, borderPadding=10,
-                                    borderColor=accent_blue, borderWidth=1)
+            "h1": ParagraphStyle(
+                name="h1",
+                fontName="Helvetica-Bold",
+                fontSize=24,
+                textColor=dark_grey,
+                spaceAfter=18,
+                leading=30,
+            ),
+            "h2": ParagraphStyle(
+                name="h2",
+                fontName="Helvetica",
+                fontSize=16,
+                textColor=light_grey,
+                spaceAfter=12,
+                leading=20,
+            ),
+            "h3": ParagraphStyle(
+                name="h3",
+                fontName="Helvetica-Bold",
+                fontSize=14,
+                textColor=accent_blue,
+                spaceBefore=12,
+                spaceAfter=6,
+                leading=18,
+            ),
+            "Normal": ParagraphStyle(
+                name="Normal",
+                fontName="Helvetica",
+                fontSize=11,
+                textColor=dark_grey,
+                spaceAfter=6,
+                leading=16,
+                alignment=4,
+            ),  # Justified
+            "Bullet": ParagraphStyle(
+                name="Bullet",
+                fontName="Helvetica",
+                fontSize=11,
+                textColor=dark_grey,
+                spaceAfter=4,
+                leading=16,
+                leftIndent=18,
+                bulletIndent=0,
+            ),
+            "Quote": ParagraphStyle(
+                name="Quote",
+                fontName="Helvetica-Oblique",
+                fontSize=11,
+                textColor=colors.HexColor("#2C3E50"),
+                spaceBefore=10,
+                spaceAfter=10,
+                leading=16,
+                leftIndent=15,
+                rightIndent=15,
+                backColor=quote_bg_color,
+                borderPadding=10,
+                borderColor=accent_blue,
+                borderWidth=1,
+            ),
         }
         story = []
 
         # --- Extract sections and create TOC ---
         # --- Build Cover Page ---
         # Add a professional cover page
-        story.append(Paragraph(f"Book Summary & Review", styles['h1']))
+        story.append(Paragraph(f"Book Summary & Review", styles["h1"]))
         story.append(Spacer(1, 0.2 * inch))
         story.append(HorizontalLine(450, 2, accent_blue))
         story.append(Spacer(1, 0.3 * inch))
-        story.append(Paragraph(f"{book_title}", styles['h1']))
+        story.append(Paragraph(f"{book_title}", styles["h1"]))
         story.append(Spacer(1, 0.1 * inch))
-        story.append(Paragraph("A Professional Analysis for Technology Leaders", styles['h2']))
+        story.append(
+            Paragraph("A Professional Analysis for Technology Leaders", styles["h2"])
+        )
         story.append(Spacer(1, 0.5 * inch))
 
         # Add a decorative element to the cover
@@ -97,7 +158,13 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         pie.width = 100
         pie.height = 100
         pie.data = [35, 25, 20, 15, 5]  # Represent book value distribution
-        pie.labels = ['Key Insights', 'Practical Tips', 'Case Studies', 'Frameworks', 'Other']
+        pie.labels = [
+            "Key Insights",
+            "Practical Tips",
+            "Case Studies",
+            "Frameworks",
+            "Other",
+        ]
         pie.slices.strokeWidth = 0.5
         pie.slices[0].fillColor = accent_blue
         pie.slices[1].fillColor = accent_blue
@@ -110,15 +177,17 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         story.append(Spacer(1, 0.3 * inch))
 
         # Add author info section
-        story.append(Paragraph("Prepared by", styles['Normal']))
-        story.append(Paragraph("Professional Book Summary Service", styles['Strong']))
-        story.append(Paragraph(f"Completed on: {time.strftime('%B %d, %Y')}", styles['Normal']))
+        story.append(Paragraph("Prepared by", styles["Normal"]))
+        story.append(Paragraph("Professional Book Summary Service", styles["Strong"]))
+        story.append(
+            Paragraph(f"Completed on: {time.strftime('%B %d, %Y')}", styles["Normal"])
+        )
 
         # Add page break after cover
         story.append(PageBreak())
 
         # --- Add Table of Contents ---
-        story.append(Paragraph("Table of Contents", styles['toc_title']))
+        story.append(Paragraph("Table of Contents", styles["toc_title"]))
         story.append(Spacer(1, 0.2 * inch))
 
         # Create a simple TOC manually
@@ -126,28 +195,59 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         for i, section in enumerate(story):
             if len(section) > 60:  # Truncate long section names
                 section = section[:57] + "..."
-            toc_data.append([Paragraph(section, styles['toc_heading']), Paragraph(f"Page {i + 2}", styles['toc_item'])])
+            toc_data.append(
+                [
+                    Paragraph(section, styles["toc_heading"]),
+                    Paragraph(f"Page {i + 2}", styles["toc_item"]),
+                ]
+            )
 
         if toc_data:  # Only create table if we have sections
             # Create the table with the TOC data
             toc_table = Table(toc_data, colWidths=[5 * inch, 0.7 * inch])
-            toc_table.setStyle(TableStyle([
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.white),  # No visible grid
-                ('LINEBELOW', (0, 0), (-1, -2), 0.5, light_grey),  # Light separator lines
-                ('BACKGROUND', (0, 0), (-1, -1), colors.white),  # White background
-            ]))
+            toc_table.setStyle(
+                TableStyle(
+                    [
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                        (
+                            "GRID",
+                            (0, 0),
+                            (-1, -1),
+                            0.5,
+                            colors.white,
+                        ),  # No visible grid
+                        (
+                            "LINEBELOW",
+                            (0, 0),
+                            (-1, -2),
+                            0.5,
+                            light_grey,
+                        ),  # Light separator lines
+                        (
+                            "BACKGROUND",
+                            (0, 0),
+                            (-1, -1),
+                            colors.white,
+                        ),  # White background
+                    ]
+                )
+            )
             story.append(toc_table)
         else:
-            story.append(Paragraph("(Content sections will appear here)", styles['NormalLeft']))
+            story.append(
+                Paragraph("(Content sections will appear here)", styles["NormalLeft"])
+            )
 
         story.append(Spacer(1, 0.3 * inch))
         story.append(HorizontalLine(450, 1, light_grey))
         story.append(Spacer(1, 0.2 * inch))
-        story.append(Paragraph(
-            "This summary provides key insights and analysis. Skip to the last page for the final review and recommendation.",
-            styles['Emphasis']))
+        story.append(
+            Paragraph(
+                "This summary provides key insights and analysis. Skip to the last page for the final review and recommendation.",
+                styles["Emphasis"],
+            )
+        )
 
         # Add page break after TOC
         story.append(PageBreak())
@@ -158,75 +258,93 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         section_count = 0
 
         # Process the content with improved formatting
-        for para_text in summary_and_review_text.split('\n'):
+        for para_text in summary_and_review_text.split("\n"):
             if not para_text.strip():
                 continue  # Skip empty lines
 
             # Check for Markdown headings of different levels
-            if para_text.startswith('# '):
+            if para_text.startswith("# "):
                 section_count += 1
-                heading_text = para_text.lstrip('# ').strip()
+                heading_text = para_text.lstrip("# ").strip()
                 # Add a page break before major sections except the first one
                 if section_count > 1:
                     story.append(PageBreak())
 
-                story.append(HorizontalLine.FancySectionHeader(heading_text, 450, bg_color=accent_blue, text_color=colors.white))
+                story.append(
+                    HorizontalLine.FancySectionHeader(
+                        heading_text, 450, bg_color=accent_blue, text_color=colors.white
+                    )
+                )
                 story.append(Spacer(1, 0.15 * inch))
 
                 # Check if we're entering the review section
-                if "review" in heading_text.lower() or "recommendation" in heading_text.lower():
+                if (
+                    "review" in heading_text.lower()
+                    or "recommendation" in heading_text.lower()
+                ):
                     in_review_section = True
 
                     # Add a visual indicator for the review section
-                    story.append(Paragraph("FINAL ASSESSMENT", styles['toc_title']))
+                    story.append(Paragraph("FINAL ASSESSMENT", styles["toc_title"]))
 
-            elif para_text.startswith('## '):
-                heading_text = para_text.lstrip('## ').strip()
-                story.append(Paragraph(heading_text, styles['h2']))
+            elif para_text.startswith("## "):
+                heading_text = para_text.lstrip("## ").strip()
+                story.append(Paragraph(heading_text, styles["h2"]))
                 story.append(HorizontalLine(450, 1, light_grey))
                 story.append(Spacer(1, 0.1 * inch))
 
-            elif para_text.startswith('### '):
-                story.append(Paragraph(para_text.lstrip('### ').strip(), styles['h3']))
+            elif para_text.startswith("### "):
+                story.append(Paragraph(para_text.lstrip("### ").strip(), styles["h3"]))
 
-            elif para_text.startswith('#### '):
-                story.append(Paragraph(para_text.lstrip('#### ').strip(), styles['h4']))
+            elif para_text.startswith("#### "):
+                story.append(Paragraph(para_text.lstrip("#### ").strip(), styles["h4"]))
 
-            elif para_text.startswith('> '):
+            elif para_text.startswith("> "):
                 # Enhanced quote styling
-                quote_text = para_text.lstrip('> ').strip()
-                story.append(Paragraph(f'"{quote_text}"', styles['Quote']))
+                quote_text = para_text.lstrip("> ").strip()
+                story.append(Paragraph(f'"{quote_text}"', styles["Quote"]))
                 story.append(Spacer(1, 0.1 * inch))
 
-            elif para_text.startswith('* ') or para_text.startswith('- '):
+            elif para_text.startswith("* ") or para_text.startswith("- "):
                 # Enhanced bullet point styling
-                bullet_text = para_text.lstrip('*- ').strip()
-                story.append(Paragraph(bullet_text, styles['Bullet'], bulletText='•'))
+                bullet_text = para_text.lstrip("*- ").strip()
+                story.append(Paragraph(bullet_text, styles["Bullet"], bulletText="•"))
 
-            elif para_text.startswith('```') or para_text.endswith('```'):
+            elif para_text.startswith("```") or para_text.endswith("```"):
                 # Skip code blocks or handle them if needed
                 continue
 
-            elif in_review_section and ('recommend' in para_text.lower() or
-                                        'conclusion' in para_text.lower() or
-                                        'verdict' in para_text.lower()):
+            elif in_review_section and (
+                "recommend" in para_text.lower()
+                or "conclusion" in para_text.lower()
+                or "verdict" in para_text.lower()
+            ):
                 # Highlight recommendation text
                 story.append(Spacer(1, 0.2 * inch))
-                story.append(Paragraph(para_text, styles['Callout']))
+                story.append(Paragraph(para_text, styles["Callout"]))
                 story.append(Spacer(1, 0.2 * inch))
 
             else:
                 # Check for bold and italic text in paragraphs
-                if '**' in para_text or '__' in para_text:
+                if "**" in para_text or "__" in para_text:
                     # Has bold text - use strong style
-                    story.append(Paragraph(para_text.replace('**', '<b>').replace('__', '<b>'), styles['Strong']))
-                elif '*' in para_text or '_' in para_text:
+                    story.append(
+                        Paragraph(
+                            para_text.replace("**", "<b>").replace("__", "<b>"),
+                            styles["Strong"],
+                        )
+                    )
+                elif "*" in para_text or "_" in para_text:
                     # Has italic text - use emphasis style
-                    story.append(Paragraph(para_text.replace('*', '<i>').replace('_', '<i>'), styles['Emphasis']))
+                    story.append(
+                        Paragraph(
+                            para_text.replace("*", "<i>").replace("_", "<i>"),
+                            styles["Emphasis"],
+                        )
+                    )
                 else:
                     # Regular paragraph
-                    story.append(Paragraph(para_text, styles['Normal']))
-
+                    story.append(Paragraph(para_text, styles["Normal"]))
 
     except OSError as e:
         print(f"Error creating output directory or PDF file: {e}")
@@ -235,11 +353,10 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         print(f"Unexpected error during PDF setup: {e}")
         return False
 
-
     # Custom document building with footer
     def add_footer(canvas, doc):
         canvas.saveState()
-        canvas.setFont('Helvetica', 9)
+        canvas.setFont("Helvetica", 9)
         canvas.setFillColor(light_grey)
         footer_text = f"Book Summary & Review | {book_title} | Generated on {time.strftime('%B %d, %Y')}"
         canvas.drawCentredString(letter[0] / 2, 0.5 * inch, footer_text)
@@ -258,6 +375,7 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
 # --- Custom Flowables ---
 class HorizontalLine(Flowable):
     """A horizontal line with thickness and color."""
+
     def __init__(self, width, thickness=1, color=None):
         Flowable.__init__(self)
         self.width = width
@@ -272,8 +390,17 @@ class HorizontalLine(Flowable):
 
     class FancySectionHeader(Flowable):
         """A fancy section header with background."""
-        def __init__(self, text, width, height=0.3*inch, font_name='Helvetica-Bold', font_size=14,
-                     bg_color=None, text_color=None):
+
+        def __init__(
+            self,
+            text,
+            width,
+            height=0.3 * inch,
+            font_name="Helvetica-Bold",
+            font_size=14,
+            bg_color=None,
+            text_color=None,
+        ):
             Flowable.__init__(self)
             self.text = text
             self.width = width
@@ -293,11 +420,11 @@ class HorizontalLine(Flowable):
             self.canv.setFont(self.font_name, self.font_size)
             if self.text_color:
                 self.canv.setFillColor(self.text_color)
-            text_width = self.canv.stringWidth(self.text, self.font_name, self.font_size)
+            text_width = self.canv.stringWidth(
+                self.text, self.font_name, self.font_size
+            )
             y_position = (self.height - self.font_size) / 2
             self.canv.drawString(10, y_position, self.text)
-
-
 
 
 # --- Main Processing Logic ---
@@ -313,7 +440,9 @@ def process_ebooks_with_gemini_vision():
 
     pdf_files_found = [f for f in os.listdir(PDF_FOLDER) if f.lower().endswith(".pdf")]
     if not pdf_files_found:
-        print(f"No PDF files found in '{PDF_FOLDER}'. Please ensure there are PDFs in that directory.")
+        print(
+            f"No PDF files found in '{PDF_FOLDER}'. Please ensure there are PDFs in that directory."
+        )
         return
 
     for filename in pdf_files_found:
@@ -331,20 +460,25 @@ def process_ebooks_with_gemini_vision():
             uploaded_file_obj = genai.upload_file(path=pdf_path, display_name=filename)
 
             # Wait for the file to be processed
-            print(f"Waiting for '{book_title}' (file name: {uploaded_file_obj.name}) to be processed by Gemini...")
+            print(
+                f"Waiting for '{book_title}' (file name: {uploaded_file_obj.name}) to be processed by Gemini..."
+            )
 
             # Use uploaded_file_obj.state.name directly for state checking
-            while uploaded_file_obj.state.name == 'PROCESSING':
+            while uploaded_file_obj.state.name == "PROCESSING":
                 time.sleep(5)
                 # Re-fetch the file state
                 uploaded_file_obj = genai.get_file(uploaded_file_obj.name)
 
-            if uploaded_file_obj.state.name != 'ACTIVE':
+            if uploaded_file_obj.state.name != "ACTIVE":
                 print(
-                    f"Error processing '{book_title}' via Files API. State: {uploaded_file_obj.state.name}. Skipping.")
+                    f"Error processing '{book_title}' via Files API. State: {uploaded_file_obj.state.name}. Skipping."
+                )
                 continue  # Skip to the next file
 
-            print(f"Successfully uploaded '{book_title}'. Gemini File URI: {uploaded_file_obj.uri}")
+            print(
+                f"Successfully uploaded '{book_title}'. Gemini File URI: {uploaded_file_obj.uri}"
+            )
 
             # 2. Generate Summary and Review using Gemini
             final_prompt = f"""
@@ -392,13 +526,14 @@ def process_ebooks_with_gemini_vision():
             Make it engaging, insightful, and valuable for busy tech executives who want to know if this book is worth their time.
             """
 
-            print(f"Sending prompt and uploaded PDF for '{book_title}' to Gemini model '{MODEL_NAME}'...")
+            print(
+                f"Sending prompt and uploaded PDF for '{book_title}' to Gemini model '{MODEL_NAME}'..."
+            )
             model = genai.GenerativeModel(MODEL_NAME)
 
             # Use stream=True to get the response as an iterator.
             response = model.generate_content(
-                [uploaded_file_obj, final_prompt],
-                stream=True
+                [uploaded_file_obj, final_prompt], stream=True
             )
             # Create a variable to hold the complete text and print the stream.
             summary_and_review_text = ""
@@ -421,20 +556,26 @@ def process_ebooks_with_gemini_vision():
             raw_summaries_folder = "raw_summaries"
             if not os.path.exists(raw_summaries_folder):
                 os.makedirs(raw_summaries_folder)
-                print(f"Created raw gemini_pdf_summaries folder: {raw_summaries_folder}")
+                print(
+                    f"Created raw gemini_pdf_summaries folder: {raw_summaries_folder}"
+                )
 
-            raw_summary_path = os.path.join(raw_summaries_folder, f"{book_title}_raw.txt")
+            raw_summary_path = os.path.join(
+                raw_summaries_folder, f"{book_title}_raw.txt"
+            )
             try:
-                with open(raw_summary_path, 'w', encoding='utf-8') as f:
+                with open(raw_summary_path, "w", encoding="utf-8") as f:
                     f.write(summary_and_review_text)
                 print(f"Saved raw summary to: {raw_summary_path}")
-                
+
                 # Move the processed book to the books\processed folder
-                processed_folder = os.path.join(os.path.dirname(PDF_FOLDER), "processed")
+                processed_folder = os.path.join(
+                    os.path.dirname(PDF_FOLDER), "processed"
+                )
                 if not os.path.exists(processed_folder):
                     os.makedirs(processed_folder)
                     print(f"Created processed books folder: {processed_folder}")
-                
+
                 # Move the original PDF file to the processed folder
                 processed_file_path = os.path.join(processed_folder, filename)
                 shutil.move(pdf_path, processed_file_path)
@@ -447,18 +588,24 @@ def process_ebooks_with_gemini_vision():
         except Exception as e:
             print(f"An error occurred while processing '{book_title}': {e}")
             import traceback
+
             traceback.print_exc()  # Print full traceback for better debugging
         finally:
             # Clean up: Delete the uploaded file from Gemini's service
-            if uploaded_file_obj and hasattr(uploaded_file_obj, 'name'):
+            if uploaded_file_obj and hasattr(uploaded_file_obj, "name"):
                 try:
                     genai.delete_file(uploaded_file_obj.name)
-                    print(f"Deleted temporary Gemini file '{uploaded_file_obj.name}' for '{book_title}'.")
+                    print(
+                        f"Deleted temporary Gemini file '{uploaded_file_obj.name}' for '{book_title}'."
+                    )
                 except Exception as e:
-                    print(f"Error deleting temporary Gemini file '{uploaded_file_obj.name}': {e}")
+                    print(
+                        f"Error deleting temporary Gemini file '{uploaded_file_obj.name}': {e}"
+                    )
             else:
                 print(
-                    f"No Gemini file to delete for '{book_title}' (upload might have failed or object missing 'name').")
+                    f"No Gemini file to delete for '{book_title}' (upload might have failed or object missing 'name')."
+                )
 
 
 # --- Run the script ---

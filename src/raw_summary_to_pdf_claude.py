@@ -45,101 +45,101 @@ class EBookSummaryParser:
         styles = getSampleStyleSheet()
 
         custom_styles = {
-            'Title': ParagraphStyle(
-                'CustomTitle',
-                parent=styles['Title'],
+            "Title": ParagraphStyle(
+                "CustomTitle",
+                parent=styles["Title"],
                 fontSize=24,
                 spaceAfter=30,
-                textColor=HexColor('#2E3440'),
+                textColor=HexColor("#2E3440"),
                 alignment=TA_CENTER,
-                fontName='Helvetica-Bold'
+                fontName="Helvetica-Bold",
             ),
-            'Subtitle': ParagraphStyle(
-                'CustomSubtitle',
-                parent=styles['Heading1'],
+            "Subtitle": ParagraphStyle(
+                "CustomSubtitle",
+                parent=styles["Heading1"],
                 fontSize=18,
                 spaceAfter=20,
                 spaceBefore=20,
-                textColor=HexColor('#4C566A'),
-                fontName='Helvetica-Bold'
+                textColor=HexColor("#4C566A"),
+                fontName="Helvetica-Bold",
             ),
-            'Heading1': ParagraphStyle(
-                'CustomHeading1',
-                parent=styles['Heading1'],
+            "Heading1": ParagraphStyle(
+                "CustomHeading1",
+                parent=styles["Heading1"],
                 fontSize=16,
                 spaceAfter=12,
                 spaceBefore=20,
-                textColor=HexColor('#5E81AC'),
-                fontName='Helvetica-Bold'
+                textColor=HexColor("#5E81AC"),
+                fontName="Helvetica-Bold",
             ),
-            'Heading2': ParagraphStyle(
-                'CustomHeading2',
-                parent=styles['Heading2'],
+            "Heading2": ParagraphStyle(
+                "CustomHeading2",
+                parent=styles["Heading2"],
                 fontSize=14,
                 spaceAfter=10,
                 spaceBefore=15,
-                textColor=HexColor('#81A1C1'),
-                fontName='Helvetica-Bold'
+                textColor=HexColor("#81A1C1"),
+                fontName="Helvetica-Bold",
             ),
-            'Heading3': ParagraphStyle(
-                'CustomHeading3',
-                parent=styles['Heading3'],
+            "Heading3": ParagraphStyle(
+                "CustomHeading3",
+                parent=styles["Heading3"],
                 fontSize=12,
                 spaceAfter=8,
                 spaceBefore=12,
-                textColor=HexColor('#88C0D0'),
-                fontName='Helvetica-Bold'
+                textColor=HexColor("#88C0D0"),
+                fontName="Helvetica-Bold",
             ),
-            'Body': ParagraphStyle(
-                'CustomBody',
-                parent=styles['Normal'],
+            "Body": ParagraphStyle(
+                "CustomBody",
+                parent=styles["Normal"],
                 fontSize=11,
                 spaceAfter=6,
                 spaceBefore=6,
-                textColor=HexColor('#3B4252'),
-                fontName='Helvetica',
+                textColor=HexColor("#3B4252"),
+                fontName="Helvetica",
                 alignment=TA_JUSTIFY,
-                leading=14
+                leading=14,
             ),
-            'Quote': ParagraphStyle(
-                'CustomQuote',
-                parent=styles['Normal'],
+            "Quote": ParagraphStyle(
+                "CustomQuote",
+                parent=styles["Normal"],
                 fontSize=11,
                 spaceAfter=12,
                 spaceBefore=12,
-                textColor=HexColor('#4C566A'),
-                fontName='Helvetica-Oblique',
+                textColor=HexColor("#4C566A"),
+                fontName="Helvetica-Oblique",
                 leftIndent=30,
                 rightIndent=30,
                 borderWidth=0,
-                borderColor=HexColor('#D08770'),
+                borderColor=HexColor("#D08770"),
                 borderPadding=10,
-                backColor=HexColor('#ECEFF4'),
-                alignment=TA_JUSTIFY
+                backColor=HexColor("#ECEFF4"),
+                alignment=TA_JUSTIFY,
             ),
-            'Bullet': ParagraphStyle(
-                'CustomBullet',
-                parent=styles['Normal'],
+            "Bullet": ParagraphStyle(
+                "CustomBullet",
+                parent=styles["Normal"],
                 fontSize=11,
                 spaceAfter=4,
                 spaceBefore=4,
-                textColor=HexColor('#3B4252'),
-                fontName='Helvetica',
+                textColor=HexColor("#3B4252"),
+                fontName="Helvetica",
                 leftIndent=20,
                 bulletIndent=10,
-                bulletFontName='Helvetica-Bold',
-                bulletColor=HexColor('#5E81AC')
+                bulletFontName="Helvetica-Bold",
+                bulletColor=HexColor("#5E81AC"),
             ),
-            'Emphasis': ParagraphStyle(
-                'CustomEmphasis',
-                parent=styles['Normal'],
+            "Emphasis": ParagraphStyle(
+                "CustomEmphasis",
+                parent=styles["Normal"],
                 fontSize=12,
                 spaceAfter=10,
                 spaceBefore=10,
-                textColor=HexColor('#D08770'),
-                fontName='Helvetica-Bold',
-                alignment=TA_CENTER
-            )
+                textColor=HexColor("#D08770"),
+                fontName="Helvetica-Bold",
+                alignment=TA_CENTER,
+            ),
         }
 
         return custom_styles
@@ -147,25 +147,25 @@ class EBookSummaryParser:
     def parse_markdown_text(self, text: str) -> str:
         """Convert markdown text to HTML, handling custom formatting."""
         # Convert markdown to HTML
-        html = markdown.markdown(text, extensions=['extra', 'codehilite'])
+        html = markdown.markdown(text, extensions=["extra", "codehilite"])
 
         # Parse with BeautifulSoup for easier manipulation
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
         # Convert back to string
         return str(soup)
 
     def extract_title(self, text: str) -> str:
         """Extract the main title from the text."""
-        lines = text.split('\n')
+        lines = text.split("\n")
         for line in lines:
             line = line.strip()
-            if line.startswith('# ') and 'BOOK SUMMARY' in line:
+            if line.startswith("# ") and "BOOK SUMMARY" in line:
                 # Extract book title and author
-                title_match = re.search(r'# BOOK SUMMARY: (.+)', line)
+                title_match = re.search(r"# BOOK SUMMARY: (.+)", line)
                 if title_match:
                     return title_match.group(1)
-            elif line.startswith('# ') and line != '# BOOK SUMMARY':
+            elif line.startswith("# ") and line != "# BOOK SUMMARY":
                 return line[2:].strip()
         return "eBook Summary"
 
@@ -175,16 +175,16 @@ class EBookSummaryParser:
 
         # Extract title
         title = self.extract_title(text)
-        story.append(Paragraph(title, self.styles['Title']))
+        story.append(Paragraph(title, self.styles["Title"]))
         story.append(Spacer(1, 20))
 
         # Add generation date
         date_str = f"Generated on {datetime.now().strftime('%B %d, %Y')}"
-        story.append(Paragraph(date_str, self.styles['Body']))
+        story.append(Paragraph(date_str, self.styles["Body"]))
         story.append(Spacer(1, 30))
 
         # Process content line by line
-        lines = text.split('\n')
+        lines = text.split("\n")
         in_bullet_list = False
         current_paragraph = []
 
@@ -194,73 +194,73 @@ class EBookSummaryParser:
             if not line:
                 # Empty line - end current paragraph if any
                 if current_paragraph:
-                    paragraph_text = ' '.join(current_paragraph)
-                    story.append(Paragraph(paragraph_text, self.styles['Body']))
+                    paragraph_text = " ".join(current_paragraph)
+                    story.append(Paragraph(paragraph_text, self.styles["Body"]))
                     current_paragraph = []
                     story.append(Spacer(1, 6))
                 in_bullet_list = False
                 continue
 
             # Skip the main title line as we already processed it
-            if line.startswith('# BOOK SUMMARY'):
+            if line.startswith("# BOOK SUMMARY"):
                 continue
 
             # Headers
-            if line.startswith('###'):
+            if line.startswith("###"):
                 if current_paragraph:
-                    paragraph_text = ' '.join(current_paragraph)
-                    story.append(Paragraph(paragraph_text, self.styles['Body']))
+                    paragraph_text = " ".join(current_paragraph)
+                    story.append(Paragraph(paragraph_text, self.styles["Body"]))
                     current_paragraph = []
 
                 header_text = line[3:].strip()
-                story.append(Paragraph(header_text, self.styles['Heading3']))
+                story.append(Paragraph(header_text, self.styles["Heading3"]))
                 in_bullet_list = False
 
-            elif line.startswith('##'):
+            elif line.startswith("##"):
                 if current_paragraph:
-                    paragraph_text = ' '.join(current_paragraph)
-                    story.append(Paragraph(paragraph_text, self.styles['Body']))
+                    paragraph_text = " ".join(current_paragraph)
+                    story.append(Paragraph(paragraph_text, self.styles["Body"]))
                     current_paragraph = []
 
                 header_text = line[2:].strip()
-                story.append(Paragraph(header_text, self.styles['Heading2']))
+                story.append(Paragraph(header_text, self.styles["Heading2"]))
                 in_bullet_list = False
 
-            elif line.startswith('#'):
+            elif line.startswith("#"):
                 if current_paragraph:
-                    paragraph_text = ' '.join(current_paragraph)
-                    story.append(Paragraph(paragraph_text, self.styles['Body']))
+                    paragraph_text = " ".join(current_paragraph)
+                    story.append(Paragraph(paragraph_text, self.styles["Body"]))
                     current_paragraph = []
 
                 header_text = line[1:].strip()
-                story.append(Paragraph(header_text, self.styles['Heading1']))
+                story.append(Paragraph(header_text, self.styles["Heading1"]))
                 in_bullet_list = False
 
             # Bullet points
-            elif line.startswith('*') or line.startswith('-'):
+            elif line.startswith("*") or line.startswith("-"):
                 if current_paragraph:
-                    paragraph_text = ' '.join(current_paragraph)
-                    story.append(Paragraph(paragraph_text, self.styles['Body']))
+                    paragraph_text = " ".join(current_paragraph)
+                    story.append(Paragraph(paragraph_text, self.styles["Body"]))
                     current_paragraph = []
 
                 bullet_text = line[1:].strip()
                 # Process bold text in bullets
                 bullet_text = self._process_bold_text(bullet_text)
-                story.append(Paragraph(f"• {bullet_text}", self.styles['Bullet']))
+                story.append(Paragraph(f"• {bullet_text}", self.styles["Bullet"]))
                 in_bullet_list = True
 
             # Block quotes
-            elif line.startswith('>'):
+            elif line.startswith(">"):
                 if current_paragraph:
-                    paragraph_text = ' '.join(current_paragraph)
-                    story.append(Paragraph(paragraph_text, self.styles['Body']))
+                    paragraph_text = " ".join(current_paragraph)
+                    story.append(Paragraph(paragraph_text, self.styles["Body"]))
                     current_paragraph = []
 
                 quote_text = line[1:].strip()
                 # Remove extra quotes if present
                 if quote_text.startswith('"') and quote_text.endswith('"'):
                     quote_text = quote_text[1:-1]
-                story.append(Paragraph(f'"{quote_text}"', self.styles['Quote']))
+                story.append(Paragraph(f'"{quote_text}"', self.styles["Quote"]))
                 in_bullet_list = False
 
             # Regular text
@@ -276,22 +276,22 @@ class EBookSummaryParser:
 
         # Add any remaining paragraph
         if current_paragraph:
-            paragraph_text = ' '.join(current_paragraph)
-            story.append(Paragraph(paragraph_text, self.styles['Body']))
+            paragraph_text = " ".join(current_paragraph)
+            story.append(Paragraph(paragraph_text, self.styles["Body"]))
 
         return story
 
     def _process_bold_text(self, text: str) -> str:
         """Convert **bold** markdown to ReportLab bold formatting."""
         # Replace **text** with <b>text</b>
-        text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
+        text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
         return text
 
     def create_pdf(self, input_file: str, output_file: str):
         """Create PDF from input text file."""
         # Read input file
         try:
-            with open(input_file, 'r', encoding='utf-8') as f:
+            with open(input_file, "r", encoding="utf-8") as f:
                 content = f.read()
         except FileNotFoundError:
             print(f"Error: File '{input_file}' not found.")
@@ -307,7 +307,7 @@ class EBookSummaryParser:
             rightMargin=72,
             leftMargin=72,
             topMargin=72,
-            bottomMargin=72
+            bottomMargin=72,
         )
 
         # Process content
@@ -321,7 +321,9 @@ class EBookSummaryParser:
             print(f"Error creating PDF: {e}")
 
 
-def process_folder(input_folder: str = "raw_summaries", output_folder: str = "claude_pdf_summaries"):
+def process_folder(
+    input_folder: str = "raw_summaries", output_folder: str = "claude_pdf_summaries"
+):
     """Process all text files in the input folder and create PDFs in the output folder."""
 
     input_path = Path(input_folder)
@@ -376,18 +378,18 @@ def main():
     )
     parser.add_argument(
         "input_file",
-        nargs='?',
-        help="Input text file containing the eBook summary (optional - will process folder if not provided)"
+        nargs="?",
+        help="Input text file containing the eBook summary (optional - will process folder if not provided)",
     )
     parser.add_argument(
         "output_file",
-        nargs='?',
-        help="Output PDF file (optional, defaults to input filename with .pdf extension)"
+        nargs="?",
+        help="Output PDF file (optional, defaults to input filename with .pdf extension)",
     )
     parser.add_argument(
         "--folder",
         action="store_true",
-        help="Process all files in raw_summaries folder"
+        help="Process all files in raw_summaries folder",
     )
 
     args = parser.parse_args()
@@ -406,7 +408,7 @@ def main():
                 stem = stem[:-4]  # Remove the _raw suffix
                 args.output_file = input_path.with_name(f"{stem}.pdf")
             else:
-                args.output_file = input_path.with_suffix('.pdf')
+                args.output_file = input_path.with_suffix(".pdf")
 
         # Create parser and generate PDF
         parser = EBookSummaryParser()
@@ -453,11 +455,11 @@ The book provides a practical guide to the **SOLID principles** which are fundam
     parser = EBookSummaryParser()
 
     # Save sample content to file
-    with open('sample_summary.txt', 'w', encoding='utf-8') as f:
+    with open("sample_summary.txt", "w", encoding="utf-8") as f:
         f.write(sample_content)
 
     # Create PDF
-    parser.create_pdf('sample_summary.txt', 'sample_summary.pdf')
+    parser.create_pdf("sample_summary.txt", "sample_summary.pdf")
 
     print("Example PDF created: sample_summary.pdf")
 
@@ -466,6 +468,7 @@ def quick_folder_process():
     """Quick function to process the raw_summaries folder."""
     print("Processing all files in raw_summaries folder...")
     process_folder()
+
 
 # Uncomment the line below to run the example
 # example_usage()
