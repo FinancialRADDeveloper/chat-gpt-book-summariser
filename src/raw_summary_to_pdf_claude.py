@@ -353,8 +353,11 @@ def process_folder(input_folder: str = "raw_summaries", output_folder: str = "cl
     for text_file in text_files:
         print(f"\nProcessing: {text_file.name}")
 
-        # Create output filename (same name but with .pdf extension)
-        output_file = output_path / f"{text_file.stem}.pdf"
+        # Create output filename (remove _raw suffix if present and add .pdf extension)
+        stem = text_file.stem
+        if stem.endswith("_raw"):
+            stem = stem[:-4]  # Remove the _raw suffix
+        output_file = output_path / f"{stem}.pdf"
 
         try:
             # Convert to PDF
@@ -397,7 +400,13 @@ def main():
         # Set output file if not provided
         if not args.output_file:
             input_path = Path(args.input_file)
-            args.output_file = input_path.with_suffix('.pdf')
+            # Remove _raw suffix if present
+            stem = input_path.stem
+            if stem.endswith("_raw"):
+                stem = stem[:-4]  # Remove the _raw suffix
+                args.output_file = input_path.with_name(f"{stem}.pdf")
+            else:
+                args.output_file = input_path.with_suffix('.pdf')
 
         # Create parser and generate PDF
         parser = EBookSummaryParser()
