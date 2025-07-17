@@ -5,7 +5,6 @@ from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
     Spacer,
-    Image,
     PageBreak,
     Table,
     TableStyle,
@@ -13,14 +12,10 @@ from reportlab.platypus import (
 from reportlab.lib.units import inch
 from reportlab.graphics.shapes import Drawing, Line
 from reportlab.graphics.charts.piecharts import Pie
-from reportlab.graphics.charts.lineplots import LinePlot
-from reportlab.platypus.tableofcontents import TableOfContents
-from reportlab.platypus.frames import Frame
 from reportlab.platypus.flowables import Flowable
 from dotenv import load_dotenv
 import time  # Import time for sleep
 import sys
-import re
 import shutil  # Import shutil for moving files
 
 # Load environment variables from .env file
@@ -39,12 +34,9 @@ MODEL_NAME = "gemini-1.5-flash-latest"
 
 
 def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -> bool:
-
     try:
         # 3. Create a Formatted PDF with Advanced Styling
-        output_pdf_path = os.path.join(
-            OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf"
-        )
+        output_pdf_path = os.path.join(OUTPUT_FOLDER, f"{book_title}_Summary_Review.pdf")
 
         # Ensure output directory exists
         if not os.path.exists(OUTPUT_FOLDER):
@@ -135,15 +127,13 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         # --- Extract sections and create TOC ---
         # --- Build Cover Page ---
         # Add a professional cover page
-        story.append(Paragraph(f"Book Summary & Review", styles["h1"]))
+        story.append(Paragraph("Book Summary & Review", styles["h1"]))
         story.append(Spacer(1, 0.2 * inch))
         story.append(HorizontalLine(450, 2, accent_blue))
         story.append(Spacer(1, 0.3 * inch))
         story.append(Paragraph(f"{book_title}", styles["h1"]))
         story.append(Spacer(1, 0.1 * inch))
-        story.append(
-            Paragraph("A Professional Analysis for Technology Leaders", styles["h2"])
-        )
+        story.append(Paragraph("A Professional Analysis for Technology Leaders", styles["h2"]))
         story.append(Spacer(1, 0.5 * inch))
 
         # Add a decorative element to the cover
@@ -179,9 +169,7 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
         # Add author info section
         story.append(Paragraph("Prepared by", styles["Normal"]))
         story.append(Paragraph("Professional Book Summary Service", styles["Strong"]))
-        story.append(
-            Paragraph(f"Completed on: {time.strftime('%B %d, %Y')}", styles["Normal"])
-        )
+        story.append(Paragraph(f"Completed on: {time.strftime('%B %d, %Y')}", styles["Normal"]))
 
         # Add page break after cover
         story.append(PageBreak())
@@ -235,16 +223,15 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
             )
             story.append(toc_table)
         else:
-            story.append(
-                Paragraph("(Content sections will appear here)", styles["NormalLeft"])
-            )
+            story.append(Paragraph("(Content sections will appear here)", styles["NormalLeft"]))
 
         story.append(Spacer(1, 0.3 * inch))
         story.append(HorizontalLine(450, 1, light_grey))
         story.append(Spacer(1, 0.2 * inch))
         story.append(
             Paragraph(
-                "This summary provides key insights and analysis. Skip to the last page for the final review and recommendation.",
+                "This summary provides key insights and analysis. "
+                "Skip to the last page for the final review and recommendation.",
                 styles["Emphasis"],
             )
         )
@@ -254,7 +241,6 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
 
         # Parse and add the AI-generated text using enhanced styles
         in_review_section = False
-        current_heading_level = 0
         section_count = 0
 
         # Process the content with improved formatting
@@ -271,17 +257,12 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
                     story.append(PageBreak())
 
                 story.append(
-                    HorizontalLine.FancySectionHeader(
-                        heading_text, 450, bg_color=accent_blue, text_color=colors.white
-                    )
+                    HorizontalLine.FancySectionHeader(heading_text, 450, bg_color=accent_blue, text_color=colors.white)
                 )
                 story.append(Spacer(1, 0.15 * inch))
 
                 # Check if we're entering the review section
-                if (
-                    "review" in heading_text.lower()
-                    or "recommendation" in heading_text.lower()
-                ):
+                if "review" in heading_text.lower() or "recommendation" in heading_text.lower():
                     in_review_section = True
 
                     # Add a visual indicator for the review section
@@ -315,9 +296,7 @@ def create_pdf_from_raw_summary(summary_and_review_text: str, book_title: str) -
                 continue
 
             elif in_review_section and (
-                "recommend" in para_text.lower()
-                or "conclusion" in para_text.lower()
-                or "verdict" in para_text.lower()
+                "recommend" in para_text.lower() or "conclusion" in para_text.lower() or "verdict" in para_text.lower()
             ):
                 # Highlight recommendation text
                 story.append(Spacer(1, 0.2 * inch))
@@ -420,9 +399,6 @@ class HorizontalLine(Flowable):
             self.canv.setFont(self.font_name, self.font_size)
             if self.text_color:
                 self.canv.setFillColor(self.text_color)
-            text_width = self.canv.stringWidth(
-                self.text, self.font_name, self.font_size
-            )
             y_position = (self.height - self.font_size) / 2
             self.canv.drawString(10, y_position, self.text)
 
@@ -440,9 +416,7 @@ def process_ebooks_with_gemini_vision():
 
     pdf_files_found = [f for f in os.listdir(PDF_FOLDER) if f.lower().endswith(".pdf")]
     if not pdf_files_found:
-        print(
-            f"No PDF files found in '{PDF_FOLDER}'. Please ensure there are PDFs in that directory."
-        )
+        print(f"No PDF files found in '{PDF_FOLDER}'. Please ensure there are PDFs in that directory.")
         return
 
     for filename in pdf_files_found:
@@ -460,9 +434,7 @@ def process_ebooks_with_gemini_vision():
             uploaded_file_obj = genai.upload_file(path=pdf_path, display_name=filename)
 
             # Wait for the file to be processed
-            print(
-                f"Waiting for '{book_title}' (file name: {uploaded_file_obj.name}) to be processed by Gemini..."
-            )
+            print(f"Waiting for '{book_title}' (file name: {uploaded_file_obj.name}) to be processed by Gemini...")
 
             # Use uploaded_file_obj.state.name directly for state checking
             while uploaded_file_obj.state.name == "PROCESSING":
@@ -476,9 +448,7 @@ def process_ebooks_with_gemini_vision():
                 )
                 continue  # Skip to the next file
 
-            print(
-                f"Successfully uploaded '{book_title}'. Gemini File URI: {uploaded_file_obj.uri}"
-            )
+            print(f"Successfully uploaded '{book_title}'. Gemini File URI: {uploaded_file_obj.uri}")
 
             # 2. Generate Summary and Review using Gemini
             final_prompt = f"""
@@ -526,15 +496,11 @@ def process_ebooks_with_gemini_vision():
             Make it engaging, insightful, and valuable for busy tech executives who want to know if this book is worth their time.
             """
 
-            print(
-                f"Sending prompt and uploaded PDF for '{book_title}' to Gemini model '{MODEL_NAME}'..."
-            )
+            print(f"Sending prompt and uploaded PDF for '{book_title}' to Gemini model '{MODEL_NAME}'...")
             model = genai.GenerativeModel(MODEL_NAME)
 
             # Use stream=True to get the response as an iterator.
-            response = model.generate_content(
-                [uploaded_file_obj, final_prompt], stream=True
-            )
+            response = model.generate_content([uploaded_file_obj, final_prompt], stream=True)
             # Create a variable to hold the complete text and print the stream.
             summary_and_review_text = ""
             print("\n--- Gemini Response Stream ---")
@@ -556,22 +522,16 @@ def process_ebooks_with_gemini_vision():
             raw_summaries_folder = "raw_summaries"
             if not os.path.exists(raw_summaries_folder):
                 os.makedirs(raw_summaries_folder)
-                print(
-                    f"Created raw gemini_pdf_summaries folder: {raw_summaries_folder}"
-                )
+                print(f"Created raw gemini_pdf_summaries folder: {raw_summaries_folder}")
 
-            raw_summary_path = os.path.join(
-                raw_summaries_folder, f"{book_title}_raw.txt"
-            )
+            raw_summary_path = os.path.join(raw_summaries_folder, f"{book_title}_raw.txt")
             try:
                 with open(raw_summary_path, "w", encoding="utf-8") as f:
                     f.write(summary_and_review_text)
                 print(f"Saved raw summary to: {raw_summary_path}")
 
                 # Move the processed book to the books\processed folder
-                processed_folder = os.path.join(
-                    os.path.dirname(PDF_FOLDER), "processed"
-                )
+                processed_folder = os.path.join(os.path.dirname(PDF_FOLDER), "processed")
                 if not os.path.exists(processed_folder):
                     os.makedirs(processed_folder)
                     print(f"Created processed books folder: {processed_folder}")
@@ -595,13 +555,9 @@ def process_ebooks_with_gemini_vision():
             if uploaded_file_obj and hasattr(uploaded_file_obj, "name"):
                 try:
                     genai.delete_file(uploaded_file_obj.name)
-                    print(
-                        f"Deleted temporary Gemini file '{uploaded_file_obj.name}' for '{book_title}'."
-                    )
+                    print(f"Deleted temporary Gemini file '{uploaded_file_obj.name}' for '{book_title}'.")
                 except Exception as e:
-                    print(
-                        f"Error deleting temporary Gemini file '{uploaded_file_obj.name}': {e}"
-                    )
+                    print(f"Error deleting temporary Gemini file '{uploaded_file_obj.name}': {e}")
             else:
                 print(
                     f"No Gemini file to delete for '{book_title}' (upload might have failed or object missing 'name')."

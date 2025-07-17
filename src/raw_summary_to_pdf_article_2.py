@@ -190,38 +190,28 @@ def parse_summary_file(filepath):
         line = line.strip()
         if not line:
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             continue
 
         if line.startswith("## "):
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             article_data["content"].append(("header", line.lstrip("## ").strip()))
         elif line.startswith("### "):
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             article_data["content"].append(("subheader", line.lstrip("### ").strip()))
         elif line.startswith("* "):
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             article_data["content"].append(("bullet", line.lstrip("* ").strip()))
         elif line.startswith("> "):
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             article_data["content"].append(("quote", line.lstrip("> ").strip()))
         else:
@@ -251,9 +241,7 @@ def create_article_pdf(article_data, filename="magazine_article.pdf"):
         return text.encode("cp1252", "replace").decode("cp1252")
 
     pdf = PDF("P", "mm", "A4")
-    pdf.set_article_meta(
-        sanitize_text(article_data["title"]), sanitize_text(article_data["subtitle"])
-    )
+    pdf.set_article_meta(sanitize_text(article_data["title"]), sanitize_text(article_data["subtitle"]))
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=20)
     pdf.set_left_margin(15)
@@ -302,6 +290,4 @@ if __name__ == "__main__":
             input_file = os.path.join(raw_summaries_dir, filename)
             output_filename = os.path.splitext(filename)[0] + ".pdf"
             parsed_data = parse_summary_file(input_file)
-            create_article_pdf(
-                parsed_data, filename=os.path.join(summaries_dir, output_filename)
-            )
+            create_article_pdf(parsed_data, filename=os.path.join(summaries_dir, output_filename))

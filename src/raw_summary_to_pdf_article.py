@@ -8,7 +8,6 @@
 # To run this script, you first need to install the library:
 # pip install fpdf2
 
-import re
 from fpdf import FPDF
 
 # --- Configuration for Magazine Style ---
@@ -166,7 +165,7 @@ def parse_summary_file(filepath):
             title_found = True
         elif line.startswith("## ") and not article_data["subtitle"]:
             article_data["subtitle"] = line.lstrip("## ").strip()
-            lines = lines[i + 1 :]  # Move to the remaining content
+            lines = lines[i + 1:]  # Move to the remaining content
             break
 
     # Parse the content line by line
@@ -176,39 +175,29 @@ def parse_summary_file(filepath):
         line = line.strip()
         if not line:  # Empty line = end of paragraph
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             continue
 
         if line.startswith("## "):  # Main header logic
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
 
             if "Introduction" in line:  # Handle 'Introduction' as subsection
                 if current_section:  # Include Introduction under the current section
-                    article_data["content"].append(
-                        ("subheader", line.lstrip("## ").strip())
-                    )
+                    article_data["content"].append(("subheader", line.lstrip("## ").strip()))
             else:  # Treat as a regular main section header
                 current_section = line.lstrip("## ").strip()
                 article_data["content"].append(("header", current_section))
         elif line.startswith("### "):  # Subsection headers
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             article_data["content"].append(("subheader", line.lstrip("### ").strip()))
         elif line.startswith("> "):  # Block quotes
             if paragraph_buffer:
-                article_data["content"].append(
-                    ("paragraph", " ".join(paragraph_buffer))
-                )
+                article_data["content"].append(("paragraph", " ".join(paragraph_buffer)))
                 paragraph_buffer = []
             article_data["content"].append(("quote", line.lstrip("> ").strip()))
         else:  # Regular paragraph
@@ -258,9 +247,7 @@ def create_article_pdf(article_data, filename="magazine_article.pdf"):
         elif content_type == "subheader":  # Subsections (including 'Introduction')
             pdf.set_font("Helvetica", "B", 12)
             pdf.set_text_color(*COLOR_PALETTE["text_dark"])
-            pdf.multi_cell(
-                0, 7, sanitized_text, 0, "L"
-            )  # Slightly smaller font for subsections
+            pdf.multi_cell(0, 7, sanitized_text, 0, "L")  # Slightly smaller font for subsections
             pdf.ln(2)
         elif content_type == "paragraph":  # Regular paragraph
             pdf.show_paragraph(sanitized_text)

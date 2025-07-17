@@ -18,22 +18,17 @@ python raw_summary_to_pdf_claude_high_contrast.py --folder
 """
 
 import re
-import sys
 import os
 import argparse
 from pathlib import Path
 from datetime import datetime
-from typing import List, Tuple, Dict, Any
+from typing import List, Dict, Any
 
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.colors import Color, HexColor
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
-from reportlab.platypus.tableofcontents import TableOfContents
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 import markdown
 from bs4 import BeautifulSoup
@@ -75,9 +70,7 @@ class EBookSummaryParser:
                 fontSize=16,
                 spaceAfter=12,
                 spaceBefore=20,
-                textColor=HexColor(
-                    "#000000"
-                ),  # Changed from #5E81AC (blue) to #000000 (black)
+                textColor=HexColor("#000000"),  # Changed from #5E81AC (blue) to #000000 (black)
                 fontName="Helvetica-Bold",
             ),
             "Heading2": ParagraphStyle(
@@ -86,9 +79,7 @@ class EBookSummaryParser:
                 fontSize=14,
                 spaceAfter=10,
                 spaceBefore=15,
-                textColor=HexColor(
-                    "#222222"
-                ),  # Changed from #81A1C1 (light blue) to #222222 (dark grey)
+                textColor=HexColor("#222222"),  # Changed from #81A1C1 (light blue) to #222222 (dark grey)
                 fontName="Helvetica-Bold",
             ),
             "Heading3": ParagraphStyle(
@@ -97,9 +88,7 @@ class EBookSummaryParser:
                 fontSize=12,
                 spaceAfter=8,
                 spaceBefore=12,
-                textColor=HexColor(
-                    "#444444"
-                ),  # Changed from #88C0D0 (lighter blue) to #444444 (medium grey)
+                textColor=HexColor("#444444"),  # Changed from #88C0D0 (lighter blue) to #444444 (medium grey)
                 fontName="Helvetica-Bold",
             ),
             "Body": ParagraphStyle(
@@ -140,9 +129,7 @@ class EBookSummaryParser:
                 leftIndent=20,
                 bulletIndent=10,
                 bulletFontName="Helvetica-Bold",
-                bulletColor=HexColor(
-                    "#000000"
-                ),  # Changed from #5E81AC (blue) to #000000 (black)
+                bulletColor=HexColor("#000000"),  # Changed from #5E81AC (blue) to #000000 (black)
             ),
             "Emphasis": ParagraphStyle(
                 "CustomEmphasis",

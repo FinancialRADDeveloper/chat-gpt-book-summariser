@@ -13,21 +13,16 @@ python ebook_to_pdf.py input_file.txt output_file.pdf
 """
 
 import re
-import sys
 import argparse
 from pathlib import Path
 from datetime import datetime
-from typing import List, Tuple, Dict, Any
+from typing import List, Dict, Any
 
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.colors import Color, HexColor
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
-from reportlab.platypus.tableofcontents import TableOfContents
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 import markdown
 from bs4 import BeautifulSoup
@@ -321,9 +316,7 @@ class EBookSummaryParser:
             print(f"Error creating PDF: {e}")
 
 
-def process_folder(
-    input_folder: str = "raw_summaries", output_folder: str = "claude_pdf_summaries"
-):
+def process_folder(input_folder: str = "raw_summaries", output_folder: str = "claude_pdf_summaries"):
     """Process all text files in the input folder and create PDFs in the output folder."""
 
     input_path = Path(input_folder)
@@ -373,9 +366,7 @@ def process_folder(
 
 def main():
     """Main function to handle command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Convert eBook gemini_pdf_summaries to formatted PDFs"
-    )
+    parser = argparse.ArgumentParser(description="Convert eBook gemini_pdf_summaries to formatted PDFs")
     parser.add_argument(
         "input_file",
         nargs="?",

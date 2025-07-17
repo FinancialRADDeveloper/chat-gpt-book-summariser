@@ -38,9 +38,7 @@ def summarize_with_chatgpt(book_text, book_title):
         },
     ]
 
-    response = openai.ChatCompletion.create(
-        model=MODEL, messages=messages, temperature=0.7
-    )
+    response = openai.ChatCompletion.create(model=MODEL, messages=messages, temperature=0.7)
     return response["choices"][0]["message"]["content"]
 
 

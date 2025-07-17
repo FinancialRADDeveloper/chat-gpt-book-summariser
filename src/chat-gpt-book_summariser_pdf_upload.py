@@ -55,15 +55,11 @@ def summarize_book(assistant_id, file_id, book_title):
     )
 
     # Create a run with the file attached here
-    run = openai.beta.threads.runs.create(
-        thread_id=thread.id, assistant_id=assistant_id, file_ids=[file_id]
-    )
+    run = openai.beta.threads.runs.create(thread_id=thread.id, assistant_id=assistant_id, file_ids=[file_id])
 
     # Poll until the run is complete
     while True:
-        run_status = openai.beta.threads.runs.retrieve(
-            thread_id=thread.id, run_id=run.id
-        )
+        run_status = openai.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
         if run_status.status in ["completed", "failed"]:
             break
         time.sleep(3)
