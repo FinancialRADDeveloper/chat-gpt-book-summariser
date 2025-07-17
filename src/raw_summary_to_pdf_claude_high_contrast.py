@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 """
-eBook Summary to PDF Converter
+eBook Summary to PDF Converter (High Contrast Version)
 
-This script converts markdown-formatted eBook gemini_pdf_summaries into attractive PDF documents.
-It handles headings, bullet points, bold text, quotes, and creates a professional layout.
+This script is identical to raw_summary_to_pdf_claude.py but uses a high-contrast color scheme.
+It converts markdown-formatted eBook summaries into attractive PDF documents with black headings
+instead of blue, making it more readable on greyscale devices like the reMarkable tablet.
+
+The ONLY change from the original script is the color scheme - all formatting, fonts, and
+functionality remain exactly the same.
 
 Required packages:
 pip install reportlab markdown beautifulsoup4 lxml
 
 Usage:
-python ebook_to_pdf.py input_file.txt output_file.pdf
+python raw_summary_to_pdf_claude_high_contrast.py input_file.txt output_file.pdf
+python raw_summary_to_pdf_claude_high_contrast.py --folder
 """
 
 import re
+import os
 import argparse
 from pathlib import Path
 from datetime import datetime
@@ -29,7 +35,7 @@ from bs4 import BeautifulSoup
 
 
 class EBookSummaryParser:
-    """Parses and converts eBook gemini_pdf_summaries to PDF format."""
+    """Parses and converts eBook summaries to PDF format."""
 
     def __init__(self):
         self.styles = self._create_styles()
@@ -64,7 +70,7 @@ class EBookSummaryParser:
                 fontSize=16,
                 spaceAfter=12,
                 spaceBefore=20,
-                textColor=HexColor("#5E81AC"),
+                textColor=HexColor("#000000"),  # Changed from #5E81AC (blue) to #000000 (black)
                 fontName="Helvetica-Bold",
             ),
             "Heading2": ParagraphStyle(
@@ -73,7 +79,7 @@ class EBookSummaryParser:
                 fontSize=14,
                 spaceAfter=10,
                 spaceBefore=15,
-                textColor=HexColor("#81A1C1"),
+                textColor=HexColor("#222222"),  # Changed from #81A1C1 (light blue) to #222222 (dark grey)
                 fontName="Helvetica-Bold",
             ),
             "Heading3": ParagraphStyle(
@@ -82,7 +88,7 @@ class EBookSummaryParser:
                 fontSize=12,
                 spaceAfter=8,
                 spaceBefore=12,
-                textColor=HexColor("#88C0D0"),
+                textColor=HexColor("#444444"),  # Changed from #88C0D0 (lighter blue) to #444444 (medium grey)
                 fontName="Helvetica-Bold",
             ),
             "Body": ParagraphStyle(
@@ -123,7 +129,7 @@ class EBookSummaryParser:
                 leftIndent=20,
                 bulletIndent=10,
                 bulletFontName="Helvetica-Bold",
-                bulletColor=HexColor("#5E81AC"),
+                bulletColor=HexColor("#000000"),  # Changed from #5E81AC (blue) to #000000 (black)
             ),
             "Emphasis": ParagraphStyle(
                 "CustomEmphasis",
@@ -284,6 +290,10 @@ class EBookSummaryParser:
 
     def create_pdf(self, input_file: str, output_file: str):
         """Create PDF from input text file."""
+        # Normalize file paths for Windows
+        input_file = os.path.normpath(input_file)
+        output_file = os.path.normpath(output_file)
+
         # Read input file
         try:
             with open(input_file, "r", encoding="utf-8") as f:
@@ -316,7 +326,10 @@ class EBookSummaryParser:
             print(f"Error creating PDF: {e}")
 
 
-def process_folder(input_folder: str = "raw_summaries", output_folder: str = "claude_pdf_summaries"):
+def process_folder(
+    input_folder: str = "src/raw_summaries",
+    output_folder: str = "src/claude_pdf_summaries_high_contrast",
+):
     """Process all text files in the input folder and create PDFs in the output folder."""
 
     input_path = Path(input_folder)
@@ -355,8 +368,10 @@ def process_folder(input_folder: str = "raw_summaries", output_folder: str = "cl
         output_file = output_path / f"{stem}.pdf"
 
         try:
-            # Convert to PDF
-            parser.create_pdf(str(text_file), str(output_file))
+            # Convert to PDF - ensure paths are properly formatted for Windows
+            input_path_str = os.path.normpath(str(text_file))
+            output_path_str = os.path.normpath(str(output_file))
+            parser.create_pdf(input_path_str, output_path_str)
             print(f"✓ Created: {output_file}")
         except Exception as e:
             print(f"✗ Error processing {text_file.name}: {e}")
@@ -366,7 +381,9 @@ def process_folder(input_folder: str = "raw_summaries", output_folder: str = "cl
 
 def main():
     """Main function to handle command line arguments."""
-    parser = argparse.ArgumentParser(description="Convert eBook gemini_pdf_summaries to formatted PDFs")
+    parser = argparse.ArgumentParser(
+        description="Convert eBook summaries to formatted PDFs with high-contrast headings"
+    )
     parser.add_argument(
         "input_file",
         nargs="?",
@@ -403,7 +420,10 @@ def main():
 
         # Create parser and generate PDF
         parser = EBookSummaryParser()
-        parser.create_pdf(args.input_file, args.output_file)
+        # Ensure paths are properly formatted for Windows
+        input_path_str = os.path.normpath(args.input_file)
+        output_path_str = os.path.normpath(str(args.output_file))
+        parser.create_pdf(input_path_str, output_path_str)
 
 
 if __name__ == "__main__":
