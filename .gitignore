@@ -2,3 +2,15 @@
 /src/claude_pdf_summaries/
 /src/gemini_pdf_summaries/
 /src/raw_summaries/
+/src/claude_pdf_summaries_high_contrast/
+/.idea/chat-gpt-book-summariser.iml
+/.vscode/launch.json
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.vscode/settings.json
+/processed/Test-Driven Development with Py - Harry J.W. Percival.pdf
+/processed/The Manager's Path - Camille Fournier.pdf
+/processed/Think Python, 3rd Edition - Allen Downey.pdf
+/processed/Unlocking Agility_ An Insider's - Jorgen Hesselberg.pdf
+/.idea/vcs.xml

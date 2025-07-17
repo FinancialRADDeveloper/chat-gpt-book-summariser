@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import time  # Import time for sleep
 import sys
 import re
+import shutil  # Import shutil for moving files
 
 # Load environment variables from .env file
 load_dotenv()
@@ -399,7 +400,6 @@ def process_ebooks_with_gemini_vision():
                 [uploaded_file_obj, final_prompt],
                 stream=True
             )
-
             # Create a variable to hold the complete text and print the stream.
             summary_and_review_text = ""
             print("\n--- Gemini Response Stream ---")
@@ -428,8 +428,19 @@ def process_ebooks_with_gemini_vision():
                 with open(raw_summary_path, 'w', encoding='utf-8') as f:
                     f.write(summary_and_review_text)
                 print(f"Saved raw summary to: {raw_summary_path}")
+                
+                # Move the processed book to the books\processed folder
+                processed_folder = os.path.join(os.path.dirname(PDF_FOLDER), "processed")
+                if not os.path.exists(processed_folder):
+                    os.makedirs(processed_folder)
+                    print(f"Created processed books folder: {processed_folder}")
+                
+                # Move the original PDF file to the processed folder
+                processed_file_path = os.path.join(processed_folder, filename)
+                shutil.move(pdf_path, processed_file_path)
+                print(f"Moved processed book to: {processed_file_path}")
             except Exception as e:
-                print(f"Error saving raw summary: {e}")
+                print(f"Error saving raw summary or moving processed book: {e}")
 
             # create_pdf_from_raw_summary(summary_and_review_text, book_title)
 
